@@ -16,10 +16,14 @@ const getBlogAll = async () => CSV.toJSON(CSV.decode(await Deno.readTextFile("st
 */
 let listID, indexhtml, blogList, blogAll;
 const updateData = async () => {
-  listID = JSON.parse(await Deno.readTextFile("static/blog-id.json"));
   indexhtml = await Deno.readTextFile("static/index.html");
+
+  blogAll = CSV.toJSON(CSV.decode(await Deno.readTextFile("static/blog-all.csv"))).reverse();
+  // id,date,title,tags,url,body,img
   blogList = CSV.toJSON(CSV.decode(await Deno.readTextFile("static/blog.csv"))).reverse();
-  blogAll = CSV.toJSON(CSV.decode(await Deno.readTextFile("static/blog-all.csv")));
+  // id,date,title,tags,url,img
+  listID = JSON.parse(await Deno.readTextFile("static/blog-id.json"));
+  // [id]
 };
 await updateData();
 const getListID = async () => listID;
@@ -28,7 +32,6 @@ const getBlogList = async () => blogList;
 const getBlogAll = async () => blogAll;
 
 const logpath = "log/";
-
 const log = async (req) => {
   if (logpath) {
     const dt = new DateTime();
