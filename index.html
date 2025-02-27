@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>virtual connectFree at cybervalley</title>
+<!DOCTYPE html>
+<body style="margin:0; background-color: #333;">
+<div id="container"></div>
+
+<div id="info" style="position: absolute; top: .5em; left: .5em; background-color: rgba(255, 255, 255, .8); padding: .3em;">
+virtual connectFree at cybervalley for Quest/VisionPro with <a href="https://threejs.org" style="color: black !important;">three.js</a><br>
+data: <a href=campus.glb>campus.glb</a><br>
+src: <a href=index.html>index.html</a><br>
+</div>
+
+<style>
+body {
+  font-family: sans-serif;
+}
+a {
+  color: black !important;
+}
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+    "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+
+const { renderer, scene, camera } = initXR();
+
+const offy = isVisionPro() ? .6 : 0;
+
+const txts = [];
+
+{
+  const path = "./campus.glb";
+  const model = await waitLoadGLTF(path);
+  model.position.x = 1;
+  model.position.y = offy - .5;
+  model.position.z = -1.8;
+  scene.add(model);
+
+  const texts = [
+    { text: "Duck Pond", x: -.35, z: 0.7, y: 0.1 },
+    { text: "守衛", x: .45, z: 1.1, y: 0.1, size: .1 },
+    { text: "エグゼクティブ棟", x: 0.2, z: 0.0, y: 0.3, size: 0.3 },
+    { text: "研究開発棟", x: -0.35, z: 0.3, y: 0.3 },
+    { text: "駐車場A 駐車場B", x: -.2, z: 1.8, y: 0.2, size: 0.35 },
+    { text: "本社（総務・営業）", x: -.4, z: -.8, y: 0.3, size: 0.35 },
+    { text: "フィットネス棟", x: -.8, z: -.3, y: 0.2, size: 0.3 },
+  ];
+  for (const t of texts) {
+    const txt = createModelText(t.text, t.size || .2);
+    txt.position.x = t.x;
+    txt.position.y = t.y;
+    txt.position.z = t.z;
+    model.add(txt);
+    txts.push(txt);
+  }
+}
+
+renderer.setAnimationLoop(() => {
+  renderer.render(scene, camera);
+  txts.forEach(i => i.lookAt(camera.position));
+});
+
+</script>
+</body>
+</html>

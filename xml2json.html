@@ -1,0 +1,36 @@
+<script type="module">
+import { XML } from "./XML.js";
+import { CSV } from "https://code4sabae.github.io/js/CSV.js";
+
+var getXHR = function() {
+	if (window.XDomainRequest)
+		return new XDomainRequest();
+	if (window.XMLHttpRequest)
+		return new XMLHttpRequest();
+	if (window.ActiveXObject)
+		return new ActiveXObject("Microsoft.XMLHTTP");
+	return null;
+};
+var ajax = function(url, callback) {
+	var data = "";
+	var method = "GET";
+	var async = true;
+	var xhr = getXHR();
+	xhr.open(method, url, async);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4) {
+			var xml = xhr.responseXML;
+			callback(xml);
+		}
+	}
+	xhr.setRequestHeader("If-Modified-Since", "Thu, 01 Jun 1970 00:00:00 GMT");
+	xhr.send(data);
+};
+const fetchXML = async (url) => {
+    return new Promise(resolve => ajax(url, resolve));
+};
+const json = XML.toJSON(await fetchXML("../cedlist.xml"));
+console.log(json);
+console.log(CSV.encode(CSV.fromJSON(json.data.item)));
+
+</script>
