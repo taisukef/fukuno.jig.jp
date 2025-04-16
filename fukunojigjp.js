@@ -7,6 +7,12 @@ import { Rensa } from "https://rensadata.github.io/Rensa-es/Rensa.js";
 import { DateTime } from "https://js.sabae.cc/DateTime.js";
 import { makeThumbnail } from "./makeThumbnail.js";
 import { handleWeb } from "https://js.sabae.cc/wsutil.js";
+//import { makeblogdata } from "./makeblogdata.js";
+import { encodeHTML } from "https://js.sabae.cc/encodeHTML.js";
+
+const FN_REFRESH = (await Deno.readTextFile(".refresh")).trim();
+
+const maxagemin = 10; // min
 
 /*
 const getListID = async () => JSON.parse(await Deno.readTextFile("static/blog-id.json"));
@@ -30,6 +36,13 @@ const getListID = async () => listID;
 const getIndex = async () => indexhtml;
 const getBlogList = async () => blogList;
 const getBlogAll = async () => blogAll;
+
+/*
+const makeAndUpdate = async () => {
+  await makeblogdata();
+  await updateData();
+};
+*/
 
 const logpath = "log/";
 const log = async (req) => {
@@ -120,6 +133,11 @@ const readFileCoreHTML = async (fn, req) => {
   if (fn.indexOf("/", 1) > 0) {
     return await readFileStandard(fn);
   }
+  if (fn == "/" + FN_REFRESH) {
+    //const promise = makeAndUpdate();
+    const promise = updateData();
+    return "ok! I'll making blog data...";
+  }
   const nquery = req.url.indexOf("/?q=");
   const issearch = nquery >= 0;
   const query = req.url.substring(nquery + 4);
@@ -169,7 +187,7 @@ const readFileCoreHTML = async (fn, req) => {
     const key = decodeURIComponent(query);
     const keys = key.split("+");
     //console.log(keys);
-    const title = "福野泰介の一日一創 - " + key;
+    const title = "福野泰介の一日一創 - " + encodeHTML(key);
     const blogs = await getBlogAll();
     const list = blogs.filter((l) => {
       for (const key of keys) {
@@ -185,7 +203,7 @@ const readFileCoreHTML = async (fn, req) => {
       `<div>${l.date.substring(0, 10)} <a href=${l.url}>${l.title}</a></div>`
     ).join("\n");
     let htmllist = templateList;
-    htmllist = htmllist.replace(/<rep>subtitle<\/rep>/g, key);
+    htmllist = htmllist.replace(/<rep>subtitle<\/rep>/g, encodeHTML(key));
     htmllist = htmllist.replace(
       /<rep>url<\/rep>/g,
       "https://fukuno.jig.jp/?q=" + encodeURIComponent(query),
@@ -472,6 +490,9 @@ const handle = async (path, req) => {
       "Access-Control-Allow-Origin": "*",
       "Content-Length": data.length,
     };
+    if (fn == "/index.html") {
+      headers["Cache-Control"] = "max-age=" + maxagemin * 60;
+    }
     return new Response(data, {
       status: 200,
       headers: new Headers(headers),
@@ -515,6 +536,7 @@ const service = async (req, conn) => {
     //res.respondWith(resd);
     return resd;
   } catch (e) {
+    //console.log(e)
     if (this.err) {
       this.err(e);
     }
