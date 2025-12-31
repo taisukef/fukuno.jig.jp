@@ -6,7 +6,8 @@ import { parseURL } from "https://js.sabae.cc/parseURL.js";
 import { Rensa } from "https://rensadata.github.io/Rensa-es/Rensa.js";
 import { DateTime } from "https://js.sabae.cc/DateTime.js";
 import { makeThumbnail } from "./makeThumbnail.js";
-import { handleWeb } from "https://js.sabae.cc/wsutil.js";
+//import { handleWeb } from "https://js.sabae.cc/wsutil.js";
+import { serveDir } from "jsr:@std/http/file-server";
 //import { makeblogdata } from "./makeblogdata.js";
 import { encodeHTML } from "https://js.sabae.cc/encodeHTML.js";
 
@@ -480,7 +481,8 @@ const handle = async (path, req) => {
     //const [data, totallen] = await readFile(fn, range, req);
     const data = await readFileCore(fn, req);
     if (!data) {
-      const r = await handleWeb("static", req, path)
+      //const r = await handleWeb("static", req, path)
+      const r = await serveDir(req, { fsRoot: "static", urlRoot: "" });
       return r;
     }
     const ctype = CONTENT_TYPE[ext] || "text/plain";
@@ -491,7 +493,10 @@ const handle = async (path, req) => {
       "Content-Length": data.length,
     };
     if (fn == "/index.html") {
-      headers["Cache-Control"] = "max-age=" + maxagemin * 60;
+      //headers["Cache-Control"] = "max-age=" + maxagemin * 60;
+      headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
+      headers["Pragma"] = "no-cache";
+      headers["Expires"] = "0";
     }
     return new Response(data, {
       status: 200,
