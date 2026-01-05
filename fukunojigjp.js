@@ -151,7 +151,7 @@ const readFileCoreHTML = async (fn, req) => {
   const listid = await getListID();
   const getNav = (no) => {
     const idx = listid.indexOf(parseInt(no));
-    if (!idx) {
+    if (idx == -1) {
       return null; // err
     }
     const nbefore = listid[idx - 1];
